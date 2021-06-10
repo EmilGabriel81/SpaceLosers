@@ -34,5 +34,13 @@ public class Enemy extends Sprite{
 		// TODO Auto-generated method stub
 
 	}
+	
+	public void getSpeed() {
+		
+	}
+	
+	public void setSpeed(int speed) {
+		
+	}
 
 }

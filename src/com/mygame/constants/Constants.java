@@ -32,7 +32,7 @@ public class Constants {
 	public static final String ENEMY_IMAGE3 = "/Dizzy.png";
 	
 	public static final String SPRITESHEET = "/exp2_0.png";
-
+	public static final String SPRITESHEET2 = "/mySprite.png";
 	
 
 	public static final String BULLET_IMAGE = "/laser.png";

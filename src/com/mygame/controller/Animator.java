@@ -31,6 +31,7 @@ public class Animator {
 				currentFrame++;
 				try {
 					sprite = frames.get(currentFrame);
+					//System.out.println("current frame"+currentFrame);
 				} catch (IndexOutOfBoundsException e) {
 					currentFrame = 0;
 						this.stop();

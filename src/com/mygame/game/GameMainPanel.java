@@ -54,6 +54,7 @@ public class GameMainPanel extends JPanel {
 	private int life = 3;
 	private int wave = 1;
 	private int score = 0;
+	private int points = 0;
 
 	// Animations---------------------------------------
 	private BufferedImage spriteSheet;
@@ -183,6 +184,7 @@ public class GameMainPanel extends JPanel {
 		Font fontS = new Font("Helvetica", Font.BOLD, 25);
 		g.setColor(Color.RED);
 		g.setFont(fontS);
+		g.drawString("Points: " + points, 700, 30);
 		g.drawString("Wave: " + wave, 1100, 30);
 		g.drawString("Score: " + score, 900, 30);
 
@@ -312,6 +314,10 @@ public class GameMainPanel extends JPanel {
 
 	private void checkGameStats() {
 		
+		if(points >= 100) {
+			life++;
+			points = 0;
+		}
 		if (player.isDead()) {
 			inGame = false;
 			message = Constants.GAMEOVER;
@@ -340,6 +346,8 @@ public class GameMainPanel extends JPanel {
 					bullet.kill();
 					enemyKilled++;
 					score += 5;
+					points += 2;
+					
 				}
 			}
 		}
