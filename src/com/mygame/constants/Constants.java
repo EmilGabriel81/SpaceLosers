@@ -32,6 +32,7 @@ public class Constants {
 	public static final String ENEMY_IMAGE3 = "/Dizzy.png";
 	
 	public static final String SPRITESHEET = "/exp2_0.png";
+	public static final String WORMHOLE = "/mySprite.png";
 	public static final String SPRITESHEET2 = "/mySprite.png";
 	
 
@@ -40,6 +41,9 @@ public class Constants {
 	public static final String LIFE_IMAGE = "/heart.png";
 	public static final String PLAYER_IMAGE = "/SmilingShip.png";
 	public static final String PLAYER_IMAGE2 = "/SmilingShip2.png";
+	
+	public static final String PLAYER_FRAME1 = "/playerFrame1.png";
+	public static final String PLAYER_FRAME2 = "/playerFrame2.png";
 
 	//*************************ENEMY_CONSTANTS*****************************************
 	public static final int ENEMY_WIDTH = 32;

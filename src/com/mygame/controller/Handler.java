@@ -1,6 +1,11 @@
 package com.mygame.controller;
 
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+
 
 public class Handler {
 /**
@@ -10,6 +15,40 @@ public class Handler {
  * @param wave
  * @return
  */
+	
+	
+	//----------------------- Changes -------------------------------------------------
+	
+	private BufferedImageLoader loader;
+	private SpriteSheet ss;
+	
+	
+	public Handler() {
+		loader = new BufferedImageLoader();
+		ss = new SpriteSheet();
+	}
+	
+	public BufferedImage fetchSprite(String path) {
+		BufferedImage image = null;	
+		try {
+			image = loader.loadImage(path);// Don`t forget to change the path
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return image;	
+	}
+
+	public List<BufferedImage> initSprites(int row, int col,int width, int height, BufferedImage spriteSheet) {
+		List<BufferedImage> sprites = new ArrayList<BufferedImage>();
+		for (int i = 0; i < row; i++) {
+			for (int j = 0; j < col; j++) {
+				sprites.add(ss.grabSprite(width * j, height * i, width, height, spriteSheet));
+			}
+		}
+		return sprites;
+	}
+	
+	//  ------------------------------ Changes -----------------------------------------------------
 	
 	public static int adjustValues(String constant, int wave){
 		// some values can be adjusted from here: bullet speed, enemy speed ..etc

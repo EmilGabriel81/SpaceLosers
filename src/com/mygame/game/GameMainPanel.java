@@ -20,15 +20,19 @@ import com.mygame.model.Bomb;
 import com.mygame.model.Bullet;
 import com.mygame.model.Enemy;
 import com.mygame.model.Player;
+import com.mygame.model.WormHole;
 
 public class GameMainPanel extends JPanel {
 
 	private Timer timer;// javax.swing timer not java.util
 	private boolean inGame = false;
+	private Handler handler;
 	// Images & Tools;
-	private BufferedImageLoader loader;
+	//private BufferedImageLoader loader;
 	private BufferedImage backGround;
-	private BufferedImage playerSprite;
+	//private BufferedImage playerSprite;
+	private BufferedImage playerFrame1;
+	private BufferedImage playerFrame2;
 	private BufferedImage bulletSprite;
 	private BufferedImage enemySprite;
 	private BufferedImage enemySprite3;
@@ -40,7 +44,8 @@ public class GameMainPanel extends JPanel {
 	// InGame Objects;
 	private Player player;
 	private Bullet bullet;
-	private List<Enemy> enemies;
+	private List<Enemy> enemiesList;// the list of enemies
+	private List<WormHole> wormholesList;// the list of enemies
 	private List<Bomb> bombs;
 	// constants for parallax BackGround
 	private int relX;
@@ -57,12 +62,16 @@ public class GameMainPanel extends JPanel {
 	private int points = 0;
 
 	// Animations---------------------------------------
-	private BufferedImage spriteSheet;
-	private SpriteSheet ss;
-	private ArrayList<BufferedImage> spritesList;
-	private Animator animator;
-	private int explosionAtX = 0;
-	private int explosionAtY = 0;
+	private BufferedImage explosionSpriteSheet;
+	private BufferedImage wormholeSpriteSheet;
+	//private SpriteSheet ss;
+	private List<BufferedImage> explosionSpritesList;// the list with the explosion sprites
+	private List<BufferedImage> wormholeSpritesList;// the list with the wormhole sprites
+	private List<BufferedImage> playerSpritesList;// player frame1 and player frame2
+	
+	//private Animator animator;
+	//private int explosionAtX = 0;
+	//private int explosionAtY = 0;
 
 	// -------------------------------------------------
 
@@ -73,39 +82,62 @@ public class GameMainPanel extends JPanel {
 
 	private void initVar() {
 
-		this.loader = new BufferedImageLoader();
+		//this.loader = new BufferedImageLoader();
 		this.player = new Player();
 		this.bullet = new Bullet();
-		this.enemies = new ArrayList<Enemy>();
+		this.enemiesList = new ArrayList<Enemy>();
 		this.bombs = new ArrayList<Bomb>();
+		this.handler = new Handler();
+		this.wormholesList = new ArrayList<WormHole>();
 		r = new Random();
 
 		// ------------------ BufferedImages--------------------
-		backGround = fetchSprites(Constants.BACKGROUND_IMAGE);// the background
-		playerSprite = fetchSprites(Constants.PLAYER_IMAGE2);// the player
-		bulletSprite = fetchSprites(Constants.BULLET_IMAGE);// the bullet/laser
-
-		enemySprite = fetchSprites(Constants.ENEMY_IMAGE2);// first enemy
-		enemySprite3 = fetchSprites(Constants.ENEMY_IMAGE3);// second enemy
-		enemySprite4 = fetchSprites(Constants.ENEMY_IMAGE4);// third enemy
-		enemySprite5 = fetchSprites(Constants.ENEMY_IMAGE5);// fourth enemy
-
-		bombSprite = fetchSprites(Constants.BOMB_IMAGE);// the Bomb
-		lifeSprite = fetchSprites(Constants.LIFE_IMAGE);// the Heart
-
-		spriteSheet = fetchSprites(Constants.SPRITESHEET);// the Sprite Sheet
-
+		backGround = handler.fetchSprite(Constants.BACKGROUND_IMAGE);// the background
+		//----------------------The Player----------------------
+		
+		//playerSprite = handler.fetchSprite(Constants.PLAYER_IMAGE2);// the player
+		playerFrame1 = handler.fetchSprite(Constants.PLAYER_FRAME1);// the player sprite frame 1
+		playerFrame2 = handler.fetchSprite(Constants.PLAYER_FRAME2);// the player sprite frame 2
+		
+		//---------------------the Bullet -------------------------
+		bulletSprite = handler.fetchSprite(Constants.BULLET_IMAGE);// the bullet/laser
+		enemySprite = handler.fetchSprite(Constants.ENEMY_IMAGE2);// first enemy
+		enemySprite3 = handler.fetchSprite(Constants.ENEMY_IMAGE3);// second enemy
+		enemySprite4 = handler.fetchSprite(Constants.ENEMY_IMAGE4);// third enemy
+		enemySprite5 = handler.fetchSprite(Constants.ENEMY_IMAGE5);// fourth enemy
+		bombSprite = handler.fetchSprite(Constants.BOMB_IMAGE);// the Bomb
+		lifeSprite = handler.fetchSprite(Constants.LIFE_IMAGE);// the Heart
+		explosionSpriteSheet = handler.fetchSprite(Constants.SPRITESHEET);// the explosion Sprite Sheet
+		wormholeSpriteSheet = handler.fetchSprite(Constants.WORMHOLE);// the wormhole Sprite Sheet
+		
 		// ------------------------------------------------
 
-		player.setImage(playerSprite);
+		
+		 playerSpritesList = new ArrayList<BufferedImage>();
+		 playerSpritesList.add(playerFrame1);
+		 playerSpritesList.add(playerFrame2);
+		 player.setSprites(playerSpritesList);
+		 
+		 
+		 
+		// ss = new SpriteSheet(spriteSheet);
+		 //explosionSpritesList = new ArrayList<BufferedImage>();
+		 
+		 explosionSpritesList = (ArrayList<BufferedImage>) handler.initSprites(4, 4, 64, 64, explosionSpriteSheet );// The explosion
+		 wormholeSpritesList = (ArrayList<BufferedImage>) handler.initSprites(5, 5, 192, 192, wormholeSpriteSheet );// The wormholes
+		 //initSprites(4, 4, 64, 64, explosionSpritesList);
+			
+		 player.setAnimation(explosionSpritesList);
+		 
+		//player.setImage(playerSprite);
 		createEnemies(enemyCount);
+		createWormHoles(enemyCount);
 
 		// Dealing with Animations--------------------------
-		ss = new SpriteSheet(spriteSheet);
-		spritesList = new ArrayList<BufferedImage>();
-		initSprites(4, 4, 64, 64, spritesList);
-		animator = new Animator(spritesList);
-		animator.setSpeed(100);
+		
+		
+		//animator = new Animator(explosionSpritesList);
+		//animator.setSpeed(100);
 		// animator.play();// It will start the animation
 
 		this.timer = new Timer(Constants.GAMESPEED, new GameCore(this));
@@ -114,15 +146,15 @@ public class GameMainPanel extends JPanel {
 	}
 
 	// prepare the sprites for the objects---------------
-	private BufferedImage fetchSprites(String path) {
-		BufferedImage image = null;
-		try {
-			image = loader.loadImage(path);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return image;
-	}
+//	private BufferedImage fetchSprites(String path) {
+//		BufferedImage image = null;
+//		try {
+//			image = loader.loadImage(path);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//		return image;
+//	}
 
 	// fill the ArrayList with enemies--------------------
 	public void createEnemies(int enemyCount) {
@@ -132,19 +164,34 @@ public class GameMainPanel extends JPanel {
 			int randY = r.nextInt(Constants.BOARD_HEIGHT - Constants.PLAYER_HEIGHT2);
 			enemy = new Enemy(randX, randY);
 			enemy.setImage(enemySprite);
-			enemies.add(enemy);
+			//------
+			enemy.setAnimation(explosionSpritesList);
+			
+			//------
+			enemiesList.add(enemy);
 			// enemies.add(new Enemy(1000 *i +30, 100*i+30));
 		}
 	}
 
-	// prepare the animations-----------------------------
-	private void initSprites(int row, int col, int width, int height, List<BufferedImage> sprites) {
-		for (int i = 0; i < row; i++) {
-			for (int j = 0; j < col; j++) {
-				sprites.add(ss.grabSprite(width * j, height * i, width, height));
-			}
+	public void createWormHoles(int enemyCount) {
+		WormHole wormHole;
+		for (int i = 0; i < enemyCount; i++) {
+			wormHole = new WormHole(1100, enemiesList.get(i).getY()-45);
+			wormHole.setAnimation(wormholeSpritesList);
+			wormholesList.add(wormHole);
 		}
+		System.out.println("wormholes : "+wormholesList.size());
 	}
+	
+	
+	// prepare the animations-----------------------------
+//	private void initSprites(int row, int col, int width, int height, List<BufferedImage> sprites) {
+//		for (int i = 0; i < row; i++) {
+//			for (int j = 0; j < col; j++) {
+//				sprites.add(ss.grabSprite(width * j, height * i, width, height));
+//			}
+//		}
+//	}
 
 	// initialize the layout------------------------------
 	private void init() {
@@ -171,9 +218,28 @@ public class GameMainPanel extends JPanel {
 		drawBullet(g);// The Bullet
 		drawEnemies(g);// The Enemies
 		drawBombs(g);// The Bombs
-		drawAnimatedExplosion(g);
+		//drawAnimatedExplosion(g);
+		drawEnemyExplosion(g);
+		drawPlayerExplosion(g);
+		drawWormHoles(g);
 		// drawTestRectangles(g);
 
+	}
+
+
+
+	private void drawPlayerExplosion(Graphics g) {
+		if(player.isDead()) {
+			player.paintAnimation(g);
+		}
+	}
+
+	private void drawEnemyExplosion(Graphics g) {
+		for(Enemy enemy :enemiesList) {
+			if(enemy.isDead())
+			enemy.paintAnimation(g);
+		}
+		
 	}
 
 	private void drawStats(Graphics g) {
@@ -207,7 +273,8 @@ public class GameMainPanel extends JPanel {
 
 	private void drawPlayer(Graphics g) {
 		if (!this.player.isDead()) {
-			g.drawImage(player.getImage(), player.getX(), player.getY(), null);
+			//g.drawImage(player.getImage(), player.getX(), player.getY(), null);
+			this.player.paintEntity(g);
 		}
 	}
 
@@ -218,7 +285,7 @@ public class GameMainPanel extends JPanel {
 	}
 
 	private void drawEnemies(Graphics g) {
-		for (Enemy enemy : this.enemies) {
+		for (Enemy enemy : this.enemiesList) {
 			if (enemy.isVisible()) {
 				if(wave >= 1 && wave < 5) {
 					enemy.setImage(enemySprite);
@@ -233,7 +300,10 @@ public class GameMainPanel extends JPanel {
 					enemy.setImage(enemySprite5);
 				
 				}	
-				g.drawImage(enemy.getImage(), enemy.getX(), enemy.getY(), null);
+				if(enemy.getX() < 1150) {
+					g.drawImage(enemy.getImage(), enemy.getX(), enemy.getY(), null);	
+				}
+				
 			}
 		}
 	}
@@ -246,20 +316,27 @@ public class GameMainPanel extends JPanel {
 		}
 	}
 
-	// draw the animations--------------------------------------------------
-	private void drawAnimatedExplosion(Graphics g) {
-		
-		if (animator != null && animator.isAlive()) {
-			animator.update(System.currentTimeMillis());
-			g.drawImage(this.animator.getSprite(), explosionAtX, explosionAtY, 64, 64, null);
+	
+	private void drawWormHoles(Graphics g) {
+		for(WormHole wh : wormholesList) {
+			wh.paintAnimation(g);
 		}
-
 	}
+	
+	// draw the animations--------------------------------------------------
+//	private void drawAnimatedExplosion(Graphics g) {
+//		
+//		if (animator != null && animator.isAlive()) {
+//			animator.update(System.currentTimeMillis());
+//			g.drawImage(this.animator.getSprite(), explosionAtX, explosionAtY, 64, 64, null);
+//		}
+//
+//	}
 
 	private void drawTestRectangles(Graphics g) {
 		g.setColor(Color.GREEN);
 		g.drawRect(player.getX() + 9, player.getY() + 7, Constants.PLAYER_WIDTH, Constants.PLAYER_HEIGHT);
-		for (Enemy enemy : enemies) {
+		for (Enemy enemy : enemiesList) {
 			if (enemy.isVisible()) {
 				g.drawRect(enemy.getX() + 8, enemy.getY() + 6, Constants.ENEMY_WIDTH, Constants.ENEMY_HEIGHT);
 			}
@@ -282,6 +359,11 @@ public class GameMainPanel extends JPanel {
 	private void update() {
 		updateParallax();
 		checkGameStats();
+		
+		//---------------------
+		updateEnemyAnimation();
+		
+		//--------------------
 		this.player.move();
 		checkCollisionOnBulletVsEnemy();
 		this.bullet.move();
@@ -291,20 +373,36 @@ public class GameMainPanel extends JPanel {
 		releaseBomb();
 		checkCollisionBombVsPlayer();
 		checkCollisionEnemyVsPlayer();
+		checkWormholeProximity();
 
 	}
 
-	private void checkPlayerStatus() {
-		if (life <= 0) {
-			explosionAtX = this.player.getX();
-			explosionAtY = this.player.getY();
-			this.animator.play();
-			this.player.kill();
-		}
-
-	}
-
+	
 	// ------------------------ Update Methods ----------------------
+
+	private void checkWormholeProximity() {
+		Enemy enemy;
+		WormHole wormhole;
+		for(int i = 0; i < enemiesList.size(); i++) {
+			enemy = enemiesList.get(i);
+			if(enemy.isVisible()){
+				if(enemy.getX() < 1300) {
+				wormhole = wormholesList.get(i);
+				//wormhole.startAnimation();
+				wormhole.runAnimation();
+				}
+			}
+		}
+		
+	}
+
+	private void updateEnemyAnimation() {
+		for(Enemy enemy : enemiesList) {
+			if(enemy.isDead()) {
+				enemy.runAnimation();	
+			}
+		}	
+	}
 
 	private void updateParallax() {
 		// Scrolling BackGround
@@ -312,6 +410,18 @@ public class GameMainPanel extends JPanel {
 		imgX -= 1;
 	}
 
+	private void checkPlayerStatus() {
+		if (life <= 0) {
+			//explosionAtX = this.player.getX();
+			//explosionAtY = this.player.getY();
+			//this.animator.play();
+			player.runAnimation();
+			this.player.kill();
+		}
+
+	}
+
+	
 	private void checkGameStats() {
 		
 		if(points >= 100) {
@@ -322,6 +432,8 @@ public class GameMainPanel extends JPanel {
 			inGame = false;
 			message = Constants.GAMEOVER;
 		}
+		System.out.println("wormholes : "+wormholesList.size()+" Enemies : "+enemiesList.size());
+		
 	}
 
 	private void checkCollisionOnBulletVsEnemy() {
@@ -329,7 +441,7 @@ public class GameMainPanel extends JPanel {
 			// bullet coordinates
 			int bulletX = bullet.getX();
 			int bulletY = bullet.getY();
-			for (Enemy enemy : enemies) {
+			for (Enemy enemy : enemiesList) {
 				int enemyX = enemy.getX();
 				int enemyY = enemy.getY();
 				if (!enemy.isVisible())
@@ -340,10 +452,11 @@ public class GameMainPanel extends JPanel {
 					// added some extra padding to the collision box since i1m using a smaller one
 					// // box
 					enemy.setVisible(false);// maybe kill();???
-					explosionAtX = enemy.getX() - 10;
-					explosionAtY = enemy.getY() - 10;
-					this.animator.play();
+					//explosionAtX = enemy.getX() - 10;
+					//explosionAtY = enemy.getY() - 10;
+					//this.animator.play();
 					bullet.kill();
+					enemy.kill();
 					enemyKilled++;
 					score += 5;
 					points += 2;
@@ -354,16 +467,25 @@ public class GameMainPanel extends JPanel {
 	}
 
 	private void respawnEnemy() {
-		for (Enemy enemy : this.enemies) {
+		Enemy enemy;
+		WormHole wormhole;
+		for(int i = 0; i < enemiesList.size(); i++) {	
+		enemy = enemiesList.get(i);
+		//for (Enemy enemy : this.enemiesList) {
 			if (enemy.isVisible()) {
+				
 				int randX = r.nextInt(Constants.BOARD_WIDTH) + Constants.BOARD_WIDTH;
 				int randY = r.nextInt(Constants.BOARD_HEIGHT - Constants.PLAYER_HEIGHT2);
 				// enemy.move(adjustValue("enemy"));
 				enemy.move(Handler.adjustValues("enemy", wave));
 				if (enemy.getX() < 0) {
+					
 					// System.out.println("randX :" + randX + " RandY : " + randY);
 					enemy.setX(randX);
 					enemy.setY(randY);
+					wormhole = wormholesList.get(i);
+					wormhole.setY(randY-45);
+					wormhole.startAnimation();
 					score--;// we decrease the score if the enemy get`s away
 				}
 			}
@@ -376,19 +498,24 @@ public class GameMainPanel extends JPanel {
 			enemyKilled = 0;
 			wave++;
 		}
+		
 		int count = 0;
-		for (Enemy enemy : enemies) {
+		for (Enemy enemy : enemiesList) {
 			if (!enemy.isVisible()) {
 				count++;
 			}
 		}
-		if (enemies.size() == count) {
+		if (enemiesList.size() == count) {
+			count = 0;
+			enemiesList.clear();
+			wormholesList.clear();
 			createEnemies(enemyCount);
+			createWormHoles(enemyCount);
 		}
 	}
 
 	private void releaseBomb() {
-		for (Enemy enemy : this.enemies) {
+		for (Enemy enemy : this.enemiesList) {
 			if (enemy.isVisible() && r.nextDouble() < Constants.BOMBPROB) {
 				Bomb bomb = new Bomb((enemy.getX() + 8), (enemy.getY() + 14));
 				bomb.setImage(bombSprite);
@@ -423,16 +550,17 @@ public class GameMainPanel extends JPanel {
 				Constants.PLAYER_HEIGHT);
 		Rectangle r2;
 
-		for (Enemy enemy : enemies) {
+		for (Enemy enemy : enemiesList) {
 			if (enemy.isVisible()) {
 				r2 = new Rectangle((enemy.getX() + 8), (enemy.getY() + 6), Constants.ENEMY_WIDTH,
 						Constants.ENEMY_HEIGHT);
 				if (r1.intersects(r2)) {
 					life--;
 					enemy.setVisible(false);
-					explosionAtX = enemy.getX();
-					explosionAtY = enemy.getY();
-					this.animator.play();
+					enemy.kill();
+					//explosionAtX = enemy.getX();
+					//explosionAtY = enemy.getY();
+					//this.animator.play();
 //					if(life <=0 ) {
 //						player.kill();
 //					}
